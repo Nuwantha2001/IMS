@@ -1,0 +1,168 @@
+/* Main container styles */
+.ac_container {
+    font-size: 0.9rem;
+    padding: 1.5rem;
+    max-width: 1200px;
+    margin: 30px auto;
+    background-color: #ffffffec;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+  }
+  
+  .ac_container h1 {
+    font-size: 1.6rem;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.5rem;
+  }
+  
+  /* Error message styling */
+  .ac_error {
+    color: #e74c3c;
+    background-color: #fdecea;
+    padding: 0.8rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0.25rem;
+    border-left: 4px solid #e74c3c;
+  }
+  
+  /* Form styling */
+  .ac_form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .ac_form_group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .ac_form_group label {
+    font-weight: 600;
+    color: #34495e;
+    margin-bottom: 0.25rem;
+  }
+  
+  .ac_form_group input,
+  .ac_form_group select {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #bdc3c7;
+    border-radius: 0.3rem;
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+  }
+  
+  .ac_form_group input:focus,
+  .ac_form_group select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  }
+  
+  /* Submit button */
+  .ac_form button[type="submit"] {
+    padding: 0.7rem 1.2rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 0.3rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    align-self: flex-start;
+    margin-top: 0.5rem;
+  }
+  
+  .ac_form button[type="submit"]:hover {
+    background-color: #2980b9;
+  }
+  
+  .ac_form button[type="submit"]:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+  }
+  
+  /* Table container */
+  .ac_table_container {
+    margin-top: 1.5rem;
+    overflow-x: auto;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Table styling */
+  .ac_table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  
+  .ac_table th {
+    background-color: #3498db;
+    color: white;
+    padding: 0.8rem 1rem;
+    text-align: left;
+    position: sticky;
+    top: 0;
+  }
+  
+  .ac_table td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid #ecf0f1;
+  }
+  
+  .ac_table tr:nth-child(even) {
+    background-color: #f8f9fa;
+  }
+  
+  .ac_table tr:hover {
+    background-color: #e8f4fc;
+  }
+  
+  /* Loading message */
+  .ac_table_container p {
+    text-align: center;
+    padding: 1.5rem;
+    color: #7f8c8d;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .ac_container {
+      padding: 1rem;
+    }
+    
+    .ac_form_group input,
+    .ac_form_group select {
+      padding: 0.5rem 0.7rem;
+    }
+    
+    .ac_table th,
+    .ac_table td {
+      padding: 0.6rem 0.8rem;
+    }
+  }
+  
+  /* Loading spinner animation */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 0.15rem solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }

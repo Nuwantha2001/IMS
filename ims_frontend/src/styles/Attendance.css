@@ -1,0 +1,125 @@
+
+.att_container {
+  font-size: 0.9rem;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  margin-top: 2%;
+  background-color: rgba(255, 255, 255, 0.835);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* att_header */
+.att_header h1 {
+  font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+/* att_form */
+.att_form {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+}
+
+.att_form label {
+  display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.att_form input,
+.att_form select {
+  width: 90%;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.3rem;
+    font-size: 0.9rem;
+}
+
+.att_form input[readonly] {
+  background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+.att_form select {
+  appearance: none;
+  background-color: #fff;
+}
+
+.att_form button {
+  width: 100%;
+  padding: 0.7rem 1.2rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 0.3rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.att_form button:hover {
+  background-color: #0056b3;
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .att_container {
+    padding: 15px;
+    width: 95%; /* Adjusted for smaller screens */
+  }
+
+  .att_header h1 {
+    font-size: 1.75rem; /* Smaller font size for smaller screens */
+  }
+
+  .att_form {
+    gap: 10px; /* Reduced gap for smaller screens */
+  }
+
+  .att_form label {
+    font-size: 0.9rem; /* Smaller font size for labels */
+  }
+
+  .att_form input,
+  .att_form select,
+  .att_form button {
+    font-size: 0.9rem; /* Smaller font size for inputs and buttons */
+  }
+}
+
+@media (max-width: 480px) {
+  .att_container {
+    padding: 10px;
+    width: 100%; /* Full width on very small screens */
+  }
+
+  .att_header h1 {
+    font-size: 1.5rem; /* Even smaller font size for mobile */
+  }
+
+  .att_form {
+    gap: 8px; /* Further reduced gap for mobile */
+  }
+
+  .att_form label {
+    font-size: 0.85rem; /* Smaller font size for labels */
+  }
+
+  .att_form input,
+  .att_form select,
+  .att_form button {
+    font-size: 0.85rem; /* Smaller font size for inputs and buttons */
+    padding: 8px; /* Reduced padding for mobile */
+  }
+
+}

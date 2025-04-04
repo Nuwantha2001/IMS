@@ -1,0 +1,173 @@
+.page-container {
+    padding: 10px;
+    background-color: #f5f5f500;
+    justify-content: center;
+}
+
+.download-button-container {
+    justify-content: right;
+    margin-bottom: 5px;
+}
+
+.download-button {
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.download-button:hover {
+    background-color: #45a049;
+}
+
+.download-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.attendance-container {
+    justify-content: center;
+    margin: 10px auto;
+    width: 210mm;
+    min-height: 200mm;
+    max-height: 297mm;
+    padding: 10mm;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+}
+
+.attendance-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.attendance-header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.attendance-header h3 {
+    margin: 5px 0 0;
+    font-size: 18px;
+    color: #555;
+}
+
+.intern-details {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.detail-row_1, .detail-row_2 {
+    margin-bottom: 10px;
+}
+
+.detail-row_1 label, .detail-row_2 label {
+    width: 100px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-right: 10px;
+}
+
+.detail-row_1 input, .detail-row_2 input {
+    margin-right: 20px;
+    font-size: 0.8rem;
+    padding: 5px;
+    border: none;
+    width: 200px;
+}
+
+
+.attendance-tables-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.attendance-table {
+    width: 48%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+}
+
+.attendance-table th, .attendance-table td {
+    border: 1px solid #ddd;
+    padding: 5px;
+    text-align: center;
+}
+
+.attendance-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.summary {
+    margin-bottom: 20px;
+}
+
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+}
+
+.summary-table td {
+    border: 1px solid #ddd;
+    padding: 5px;
+}
+
+.summary-table td:first-child {
+    font-weight: bold;
+    width: 60%;
+}
+
+.requested-by {
+    text-align: right;
+    margin-top: 10px;
+    font-style: italic;
+}
+
+.note {
+    margin-bottom: 20px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.approvals-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+
+.approvals-table th, .approvals-table td {
+    border: 1px solid #ddd;
+    padding: 5px;
+    text-align: left;
+}
+
+.approvals-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+@media print {
+    .download-button-container {
+        display: none;
+    }
+    body {
+        margin: 0;
+        background: white;
+    }
+    .attendance-container {
+        box-shadow: none;
+        padding: 0;
+    }
+}

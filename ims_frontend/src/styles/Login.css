@@ -1,0 +1,146 @@
+
+.login_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* background-color: #ffffff27; 
+  border-radius: 10px;*/
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  max-width: 1440px;
+  height: 93vh;
+  width: 100%;
+  margin: auto;
+  }
+
+.login_container .logo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 800px;
+  min-width: 50%;
+  border: 2px solid #007bff;
+  border-radius: 20px;
+}
+
+.logo{
+  background-color: #a7b9cc25;
+}
+
+.login_container .logo-left {
+  flex: 1;
+  text-align: center;
+}
+
+.login_container .logo-left h1 {
+  padding: 10px;
+  font-size: 2.5rem;
+  color: white;
+  margin-top: 30px;
+}
+.login_container .logo-left p {
+  padding: 10px;
+  font-size: 0.65rem;
+  color: white;
+  margin-top: 100px;
+}
+
+/* Login form section */
+.login_container .login-right {
+  flex: 1;
+  padding: 20px;
+}
+
+.login_container .login-right h2 {
+  font-size: 2rem;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.login_container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login_container label {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.login_container select,
+.login_container input {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.login_container select {
+  appearance: none;
+  background-color: #fff;
+}
+
+.login_container button {
+  padding: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.login_container button:hover {
+  background-color: #0056b3;
+}
+
+/* Error message */
+.login_container .error-message {
+  color: #ff0000;
+  font-size: 0.9rem;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+    width: 90%;
+  }
+
+  .logo-left {
+    padding: 15px;
+  text-align: center;
+  }
+
+  .logo-left h1 {
+    font-size: 2rem;
+  }
+
+  .login-right {
+    padding: 20px;
+  }
+
+  .login-right h2 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-left h1 {
+    font-size: 1.5rem;
+  }
+
+  .login-right h2 {
+    font-size: 1.2rem;
+  }
+
+  select,
+  input,
+  button {
+    font-size: 0.9rem;
+  }
+}

@@ -1,0 +1,188 @@
+/* Admin dashboard container */
+.admin_dash-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #ffffffea;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+.admin_dash-container h1 {
+  font-size: 2rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Flex container for Summary and Certificate tables */
+.summary-flex-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 100px;
+  margin-bottom: 30px;
+}
+
+/* Individual tables in flex container */
+.summary-table, .certificate-table {
+  width: 80%;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Common table styles */
+.admin_dash-container .a_summary-table h2,
+.admin_dash-container .certificate-table h2 {
+  text-align: left;
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.admin_dash-container .a_summary-table table,
+.admin_dash-container .certificate-table table {
+  width: 400px;
+  border-collapse: collapse;
+}
+
+.admin_dash-container .a_summary-table th,
+.admin_dash-container .a_summary-table td,
+.admin_dash-container .certificate-table th,
+.admin_dash-container .certificate-table td {
+  padding: 12px;
+  text-align: left;
+  border: 2px solid white;
+}
+
+.admin_dash-container .a_summary-table th,
+.admin_dash-container .certificate-table th {
+  background-color: #3498db74;
+  font-weight: bold;
+}
+
+/* Attendance table */
+.admin_dash-container .attendance-table {
+  margin-bottom: 30px;
+  margin-left: 25%;
+}
+
+/* Interns tables */
+.admin_dash-container .interns-table {
+  margin-bottom: 30px;
+}
+
+/* Common styles for attendance and interns tables */
+.admin_dash-container .attendance-table h2,
+.admin_dash-container .interns-table h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.admin_dash-container .attendance-table table,
+.admin_dash-container .interns-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin_dash-container .attendance-table th,
+.admin_dash-container .attendance-table td,
+.admin_dash-container .interns-table th,
+.admin_dash-container .interns-table td {
+  padding: 12px;
+  text-align: left;
+  border: 2px solid white;
+}
+
+
+.admin_dash-container .attendance-table th,
+.admin_dash-container .interns-table th {
+  background-color: #3498db74;
+  font-weight: bold;
+}
+.admin_dash-container .a_summary-table td,
+.admin_dash-container .certificate-table td,
+.admin_dash-container .attendance-table td,
+.admin_dash-container .interns-table td {
+  background-color: #dcdfe0f6;
+  color: #2c3e50;
+}
+
+/* Table row hover effect */
+.admin_dash-container table tbody tr:hover {
+  background-color: #3498dbcd;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .admin_dash-container {
+      padding: 15px;
+  }
+
+  .summary-flex-container {
+      flex-direction: column;
+      gap: 20px;
+  }
+
+  .admin_dash-container h1 {
+      font-size: 1.5rem;
+  }
+
+  .admin_dash-container .a_summary-table h2,
+  .admin_dash-container .certificate-table h2,
+  .admin_dash-container .attendance-table h2,
+  .admin_dash-container .interns-table h2 {
+      font-size: 1.25rem;
+  }
+
+  .admin_dash-container .a_summary-table table,
+  .admin_dash-container .certificate-table table,
+  .admin_dash-container .attendance-table table,
+  .admin_dash-container .interns-table table {
+      display: block;
+      overflow-x: auto;
+  }
+
+  .admin_dash-container .a_summary-table th,
+  .admin_dash-container .a_summary-table td,
+  .admin_dash-container .certificate-table th,
+  .admin_dash-container .certificate-table td,
+  .admin_dash-container .attendance-table th,
+  .admin_dash-container .attendance-table td,
+  .admin_dash-container .interns-table th,
+  .admin_dash-container .interns-table td {
+      padding: 8px;
+      font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin_dash-container {
+      padding: 10px;
+  }
+
+  .admin_dash-container h1 {
+      font-size: 1.25rem;
+  }
+
+  .admin_dash-container .a_summary-table h2,
+  .admin_dash-container .certificate-table h2,
+  .admin_dash-container .attendance-table h2,
+  .admin_dash-container .interns-table h2 {
+      font-size: 1rem;
+  }
+
+  .admin_dash-container .a_summary-table th,
+  .admin_dash-container .a_summary-table td,
+  .admin_dash-container .certificate-table th,
+  .admin_dash-container .certificate-table td,
+  .admin_dash-container .attendance-table th,
+  .admin_dash-container .attendance-table td,
+  .admin_dash-container .interns-table th,
+  .admin_dash-container .interns-table td {
+      padding: 6px;
+      font-size: 0.8rem;
+  }
+}
