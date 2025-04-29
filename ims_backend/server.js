@@ -157,7 +157,7 @@ app.post('/check-request', (req, res) => {
       return res.status(400).json({ success: false, message: "User ID is required" });
   }
 
-  const checkQuery = `SELECT * FROM request WHERE tr_id = ?`;
+  const checkQuery = `SELECT * FROM request WHERE tr_id = ? AND alert = "Requested" OR alert = "Issued"`;
   db.query(checkQuery, [userId], (err, results) => {
       if (err) {
           console.error("Database error:", err);
@@ -177,7 +177,7 @@ app.post('/certificate', (req, res) => {
   }
 
   // Check if request already exists
-  const checkQuery = `SELECT * FROM request WHERE tr_id = ?`;
+  const checkQuery = `SELECT * FROM request WHERE tr_id = ? AND alert = "Requested" OR alert = "Issued"`;
   db.query(checkQuery, [userId], (err, results) => {
       if (err) {
           console.error("Database error:", err);
@@ -261,7 +261,7 @@ app.get('/daily_attendance', (req, res) => {
 });
 
 app.get('/active_interns', (req, res) => {
-  const query = 'SELECT TR_ID, Name, Start_Date, End_Date FROM intern_data WHERE Status = "Active"';
+  const query = 'SELECT TR_ID, Short_Name, Mobile_No, Start_Date, End_Date, Actual_End_Date FROM intern_data WHERE Status = "Active"';
   db.query(query, (err, results) => {
     if (err) {
       console.error("Database error:", err);
@@ -282,6 +282,94 @@ app.get('/certificate_request', (req, res) => {
     //console.log('Certificate detais',results);
   });
 })
+
+// For monthly active interns
+app.get('/api/monthly_active_interns', (req, res) => {
+  const query = `
+      SELECT TR_ID, Short_Name, Mobile_No, Institute, Programme, 
+             Start_Date, End_Date
+      FROM intern_data
+  `;
+  
+  db.query(query, (err, results) => {
+      if (err) {
+          console.error("Database error:", err);
+          return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(results);
+  });
+});
+
+// For yearly active interns
+app.get('/api/yearly_active_interns', (req, res) => {
+  const query = `
+      SELECT TR_ID, Short_Name, Mobile_No, Institute, Programme, 
+             Start_Date, End_Date
+      FROM intern_data
+  `;
+  
+  db.query(query, (err, results) => {
+      if (err) {
+          console.error("Database error:", err);
+          return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(results);
+  });
+});
+
+//----------------------------------------------------------------------------------
+//Payment
+//----------------------------------------------------------------------------------
+// Get payment data for a specific month
+app.get('/payment_data/:month', (req, res) => {
+  const { month } = req.params;
+
+  const query = `
+    SELECT 
+      tr_id, 
+      month, 
+      name, 
+      workedDays, 
+      holidays, 
+      leaveDays, 
+      allowance 
+    FROM payment 
+    WHERE month = ? 
+    ORDER BY name ASC
+  `;
+
+  db.query(query, [month], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    res.json(results);
+  });
+});
+
+
+// In your backend (e.g., Node.js/Express)
+app.get('/monthly_pay/:year', async (req, res) => {
+  try {
+      const { year } = req.params;
+      const query = `
+          SELECT month, total_pay 
+          FROM monthly_pay 
+          WHERE month LIKE '${year}-%'
+          ORDER BY month ASC
+      `;
+      db.query(query, (err, result) => {
+          if (err) {
+              console.error("Database error:", err);
+              return res.status(500).json({ error: 'Database error' });
+          }
+          res.json(result);
+      });
+  } catch (error) {
+      console.error("Error fetching monthly payment data:", error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
 //---------------------------------------------------------------------------------
 //add intern
 //---------------------------------------------------------------------------------
@@ -449,7 +537,343 @@ app.get('/monthly_attendance/:userId/:month', (req, res) => {
     const summary = {
       workedDays: attendanceArray.filter(d => d.hours_worked === '9').length,
       holidays: attendanceArray.filter(d => 
-        ['Saturday', 'Sunday', 'Poya-day', 'Thai Pongal day'].includes(d.hours_worked)
+        ['Saturday', 'Sunday', 'Poya-day', 'Thai Pongal day','Independence Day',
+          'New Year Day', 'May Day', 'Holy Prophets Birthday', 'Deepavali',
+         'Christmas', 'Special Company Holiday', 'Good Friday', 'Mercantile Holiday', 'Election Day'].includes(d.hours_worked)
+      ).length, // Fixed misplaced `.length`
+      leaveDays: attendanceArray.filter(d => d.hours_worked === 'Leave').length,
+    };
+    // Calculate derived values after the initial object is created
+    const dateofmonth = summary.workedDays + summary.holidays + summary.leaveDays;
+    const amountperday = (10000 / dateofmonth).toFixed(2);
+    const countofday = summary.workedDays + summary.holidays;
+    const amount = (amountperday * countofday).toFixed(2);
+
+    summary.allowance = parseFloat(amount);
+        
+    res.json({
+      attendance: attendanceArray,
+      summary
+    });
+  });
+});
+
+
+app.post('/store_payment', async (req, res) => {
+  const paymentData = req.body; 
+  
+    console.log("Payment data:", paymentData);
+  
+    if (!Array.isArray(paymentData)) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invalid data format. Expected an array of payment records.' 
+      });
+    }
+
+  // Validate required fields
+  const requiredFields = ['tr_id','month', 'name', 'workedDays', 'holidays', 'leaveDays', 'allowance'];
+  
+  const invalidRows = paymentData.filter(row => 
+    !requiredFields.every(field => row[field] !== undefined && row[field] !== null)
+  );
+
+  if (invalidRows.length > 0) {
+    return res.status(400).json({ 
+      message: 'Missing required fields in one or more rows.',
+      invalidRows: invalidRows.map(row => ({ tr_id: row.tr_id, missing: requiredFields.filter(f => !row[f]) }))
+    });
+  }
+
+  try {
+    // Check for duplicates (existing records with same tr_id and month)
+    const checkConditions = paymentData.map(row => [row.tr_id, row.month]);
+    const checkIDQuery = 'SELECT tr_id, month FROM payment WHERE (tr_id, month) IN (?)';
+
+    const existingRecords = await new Promise((resolve, reject) => {
+      db.query(checkIDQuery, [checkConditions], (checkErr, results) => {
+        if (checkErr) reject(checkErr);
+        else resolve(results);
+      });
+    });
+
+    // Separate new records and records to update
+    const newRecords = paymentData.filter(row => 
+      !existingRecords.some(existing => 
+        existing.tr_id === row.tr_id && existing.month === row.month
+      )
+    );
+
+    const recordsToUpdate = paymentData.filter(row => 
+      existingRecords.some(existing => 
+        existing.tr_id === row.tr_id && existing.month === row.month
+      )
+    );
+
+    // Process updates if any
+    if (recordsToUpdate.length > 0) {
+      const updatePromises = recordsToUpdate.map(row => {
+        return new Promise((resolve, reject) => {
+          const updateQuery = `UPDATE payment SET 
+            name = ?, 
+            workedDays = ?, 
+            holidays = ?, 
+            leaveDays = ?, 
+            allowance = ?
+            WHERE tr_id = ? AND month = ?`;
+          
+          db.query(updateQuery, [
+            row.name,
+            row.workedDays,
+            row.holidays,
+            row.leaveDays,
+            row.allowance,
+            row.tr_id,
+            row.month
+          ], (updateErr, result) => {
+            if (updateErr) reject(updateErr);
+            else resolve(result);
+          });
+        });
+      });
+
+      await Promise.all(updatePromises);
+    }
+
+    // Process inserts if any
+    let insertResult = { affectedRows: 0 };
+    if (newRecords.length > 0) {
+      const addnewQuery = `INSERT INTO payment (
+        tr_id, month, name, workedDays, holidays, leaveDays, allowance
+      ) VALUES ?`;
+
+      const addnewValues = newRecords.map(row => [
+        row.tr_id,
+        row.month,
+        row.name,
+        row.workedDays,
+        row.holidays,
+        row.leaveDays,
+        row.allowance
+      ]);
+
+      insertResult = await new Promise((resolve, reject) => {
+        db.query(addnewQuery, [addnewValues], (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        });
+      });
+    }
+
+    res.json({ 
+      success: true,
+      message: `Payment records processed successfully!`,
+      insertedCount: newRecords.length,
+      updatedCount: recordsToUpdate.length,
+      totalProcessed: paymentData.length
+    });
+
+  } catch (error) {
+    console.error('Error processing payment data:', error);
+    res.status(500).json({ 
+      message: 'Failed to process payment data.',
+      error: error.message 
+    });
+  }
+});
+
+app.post('/monthly_payment', async (req, res) => {
+  const paymentData = req.body; 
+  
+  console.log("Payment data:", paymentData);
+  
+  if (!Array.isArray(paymentData)) {
+    return res.status(400).json({ 
+      success: false,
+      message: 'Invalid data format. Expected an array of payment records.' 
+    });
+  }
+
+  // Validate required fields
+  const requiredFields = ['month', 'allowance']; // Now using 'allowance' for the additional amount
+  
+  const invalidRows = paymentData.filter(row => 
+    !requiredFields.every(field => row[field] !== undefined && row[field] !== null)
+  );
+
+  if (invalidRows.length > 0) {
+    return res.status(400).json({ 
+      success: false,
+      message: 'Missing required fields in one or more rows.',
+      invalidRows: invalidRows.map(row => ({ 
+        month: row.month, 
+        missing: requiredFields.filter(f => row[f] === undefined || row[f] === null) 
+      }))
+    });
+  }
+
+  try {
+    // Check for existing records
+    const monthsToCheck = paymentData.map(row => row.month);
+    const checkQuery = 'SELECT month, total_pay FROM monthly_pay WHERE month IN (?)';
+    
+    const existingRecords = await new Promise((resolve, reject) => {
+      db.query(checkQuery, [monthsToCheck], (checkErr, results) => {
+        if (checkErr) reject(checkErr);
+        else resolve(results);
+      });
+    });
+    
+    // Separate new records and records to update
+    const newRecords = paymentData.filter(row => 
+      !existingRecords.some(existing => existing.month === row.month)
+    );
+  
+    const recordsToUpdate = paymentData.filter(row => 
+      existingRecords.some(existing => existing.month === row.month)
+    );
+
+    // Process updates - add allowance to existing total_pay
+    if (recordsToUpdate.length > 0) {
+      const updatePromises = recordsToUpdate.map(row => {
+        const existingRecord = existingRecords.find(r => r.month === row.month);
+        const newTotal = parseFloat(existingRecord.total_pay) + parseFloat(row.allowance);
+        
+        return new Promise((resolve, reject) => {
+          const updateQuery = `UPDATE monthly_pay SET 
+            total_pay = ?
+            WHERE month = ?`;
+          
+          db.query(updateQuery, [
+            newTotal,
+            row.month
+          ], (updateErr, result) => {
+            if (updateErr) reject(updateErr);
+            else resolve(result);
+          });
+        });
+      });
+
+      await Promise.all(updatePromises);
+    }
+
+    // Process inserts - for new months, total_pay = allowance
+    let insertResult = { affectedRows: 0 };
+    if (newRecords.length > 0) {
+      const addnewQuery = `INSERT INTO monthly_pay (
+        month, total_pay
+      ) VALUES ?`;
+
+      const addnewValues = newRecords.map(row => [
+        row.month,
+        row.allowance // For new records, total_pay = allowance
+      ]);
+
+      insertResult = await new Promise((resolve, reject) => {
+        db.query(addnewQuery, [addnewValues], (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        });
+      });
+    }
+
+    res.json({ 
+      success: true,
+      message: `Payment records processed successfully!`,
+      insertedCount: insertResult.affectedRows || newRecords.length,
+      updatedCount: recordsToUpdate.length,
+      totalProcessed: paymentData.length
+    });
+
+  } catch (error) {
+    console.error('Error processing payment data:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to process payment data.',
+      error: error.message 
+    });
+  }
+});
+//--------------------------------------------------------------------------
+//Manage Payment Details  
+//--------------------------------------------------------------------------
+app.get('/monthly_attendance/:month', (req, res) => {
+  const { month } = req.params;
+  const [year, monthNumber] = month.split('-');
+  
+  console.log('Fetching attendance for:', { year, monthNumber });
+
+  const query = `
+    SELECT tr_id,
+        DAY(date) as day,
+        date,
+        '08.00 am' as time_from,
+        '05.00 pm' as time_to,
+        '9' as hours_worked
+    FROM attendance 
+    WHERE YEAR(date) = ? AND MONTH(date) = ?
+    
+    UNION ALL
+    
+    SELECT 
+        DAY(date) as day,
+        date,
+        '' as time_from,
+        '' as time_to,
+        holiday_name AS hours_worked
+    FROM holidays 
+    WHERE YEAR(date) = ? AND MONTH(date) = ?
+
+    UNION ALL
+    SELECT TR_ID as id, Short_name as name FROM intern_data
+  `;
+
+  db.query(query, [ year, monthNumber, year, monthNumber], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+              
+    const daysInMonth = new Date(year, monthNumber, 0).getDate();
+    const attendanceMap = {};
+              
+    // Initialize all days
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = `${year}-${String(monthNumber).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dayOfWeek = new Date(date).getDay();
+      
+      // Default values
+      attendanceMap[day] = {
+        day,
+        time_from: '',
+        time_to: '',
+        hours_worked: dayOfWeek === 0 ? 'Sunday' : 
+                     dayOfWeek === 6 ? 'Saturday' : 'Leave'
+      };
+    }           
+    
+    // Override with actual data
+    results.forEach(row => {
+      attendanceMap[row.day] = {
+        id: row.id,
+        name: row.name,
+        day: row.day,
+        time_from: row.time_from,
+        time_to: row.time_to,
+        hours_worked: row.hours_worked
+      };
+    });          
+    
+    // Convert to array
+    const attendanceArray = Object.values(attendanceMap);
+    
+    // Calculate summary
+    const summary = {
+      workedDays: attendanceArray.filter(d => d.hours_worked === '9').length,
+      holidays: attendanceArray.filter(d => 
+        ['Saturday', 'Sunday', 'Poya-day', 'Thai Pongal day','Independence Day',
+          'New Year Day', 'May Day', 'Holy Prophets Birthday', 'Deepavali',
+         'Christmas', 'Special Company Holiday', 'Good Friday', 'Mercantile Holiday', 'Election Day' ].includes(d.hours_worked)
       ).length, // Fixed misplaced `.length`
       leaveDays: attendanceArray.filter(d => d.hours_worked === 'Leave').length
     };
@@ -460,6 +884,7 @@ app.get('/monthly_attendance/:userId/:month', (req, res) => {
     });
   });
 });
+
 //--------------------------------------------------------------------------
 //Manage Intern Details
 //--------------------------------------------------------------------------
@@ -479,7 +904,12 @@ app.get('/interns_details', (req, res) => {
 app.put('/interns_details/:id', (req, res) => {
   const internId = req.params.id;
   const updatedData = req.body;
-  
+
+  // Ensure 'Certificate' has a valid value
+  if (updatedData.Certificate === null || updatedData.Certificate === undefined) {
+    updatedData.Certificate = ''; // Default to an empty string if not provided
+  }
+
   const query = 'UPDATE intern_data SET ? WHERE TR_ID = ?';
   
   db.query(query, [updatedData, internId], (err, results) => {
@@ -529,7 +959,7 @@ app.delete('/interns_details/:id', (req, res) => {
 //--------------------------------------------------------------------------
 //Calendar
 //--------------------------------------------------------------------------
-
+// Get all holidays
 app.get('/holidays', (req, res) => {
   const query = 'SELECT id, date, holiday_name as name FROM holidays ORDER BY date ASC';
   db.query(query, (err, results) => {
@@ -537,11 +967,11 @@ app.get('/holidays', (req, res) => {
       console.error("Database error:", err);
       return res.status(500).json({ success: false, message: "Database error" });
     }
-    // Ensure we always return an array, even if empty
     res.json(Array.isArray(results) ? results : []);
   });
 });
 
+// Add new holiday
 app.post('/ins_holidays', (req, res) => {
   const { date, name } = req.body;
 
@@ -549,25 +979,105 @@ app.post('/ins_holidays', (req, res) => {
     return res.status(400).json({ error: 'All fields are required' }); 
   }
 
-  const query = `INSERT INTO holidays (date, holiday_name) VALUES (?, ?)`;
+  // Validate date format
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD' });
+  }
+
+  const query = 'INSERT INTO holidays (date, holiday_name) VALUES (?, ?)';
   db.query(query, [date, name], (err, result) => {
     if (err) {
+      if (err.code === 'ER_DUP_ENTRY') {
+        return res.status(400).json({ error: 'Holiday already exists for this date' });
+      }
       console.error("Database error:", err);
       return res.status(500).json({ error: "Database error" });
     }
     
-    // Return the newly created holiday in the same format as GET
+    // Return the newly created holiday
     const getQuery = 'SELECT id, date, holiday_name as name FROM holidays WHERE id = ?';
     db.query(getQuery, [result.insertId], (err, newHoliday) => {
       if (err) {
         console.error("Database error:", err);
         return res.status(500).json({ error: "Database error" });
       }
-      res.json(newHoliday[0]); // Return the first (and only) result
+      res.status(201).json(newHoliday[0]);
     });
   });
 });
 
+// Update holiday
+app.put('/holidays/:id', (req, res) => {
+  const { id } = req.params;
+  const { date, name } = req.body;
+
+  if (!date || !name) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  // First check if the holiday exists
+  const checkQuery = 'SELECT id FROM holidays WHERE id = ?';
+  db.query(checkQuery, [id], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "Holiday not found" });
+    }
+
+    // Proceed with update
+    const updateQuery = 'UPDATE holidays SET date = ?, holiday_name = ? WHERE id = ?';
+    db.query(updateQuery, [date, name, id], (err, result) => {
+      if (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+          return res.status(400).json({ error: 'Another holiday already exists for this date' });
+        }
+        console.error("Database error:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      // Return the updated holiday
+      const getQuery = 'SELECT id, date, holiday_name as name FROM holidays WHERE id = ?';
+      db.query(getQuery, [id], (err, updatedHoliday) => {
+        if (err) {
+          console.error("Database error:", err);
+          return res.status(500).json({ error: "Database error" });
+        }
+        res.json(updatedHoliday[0]);
+      });
+    });
+  });
+});
+
+// Delete holiday
+app.delete('/holidays/:id', (req, res) => {
+  const { id } = req.params;
+
+  // First check if the holiday exists
+  const checkQuery = 'SELECT id FROM holidays WHERE id = ?';
+  db.query(checkQuery, [id], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "Holiday not found" });
+    }
+
+    // Proceed with deletion
+    const deleteQuery = 'DELETE FROM holidays WHERE id = ?';
+    db.query(deleteQuery, [id], (err, result) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+      res.json({ success: true, message: "Holiday deleted successfully" });
+    });
+  });
+});
 //-------------------------------------------------------------------
 //Upload All Interns Data
 //-------------------------------------------------------------------

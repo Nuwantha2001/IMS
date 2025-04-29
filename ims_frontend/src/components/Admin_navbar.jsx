@@ -7,10 +7,11 @@ const Navbar = () => {
     <div className="navbar">
         <ul>
             <NavLink to='/admin_dashboard'><li>Dashboard</li></NavLink>
-            <NavLink to='/add_interndata'><li>Add New</li></NavLink>
-            <NavLink to='/manage_intern'><li>Manage Intern</li></NavLink>
+            <NavLink to='/add_interndata'><li>Register</li></NavLink>
+            <NavLink to='/manage_intern'><li>Intern</li></NavLink>
             <NavLink to='/calendar'><li>Calendar</li></NavLink>
-            <NavLink to='/uploadexcel'><li>Upload</li></NavLink>
+            <NavLink to='/uploadexcel'><li>Upload Exclel</li></NavLink>
+            <NavLink to='/payment'><li>Payment</li></NavLink>
             
             <NavLink to='/'><li>Log out</li></NavLink>
         </ul>

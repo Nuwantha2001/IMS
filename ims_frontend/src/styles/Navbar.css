@@ -39,7 +39,9 @@
   }
    */
    .navbar {
-    background-color: rgb(34, 37, 39); /* Dark background for the navbar */
+    border: 2px solid skyblue;
+    border-radius: 10px;
+    background-color:rgba(255, 255, 255, 0.13); /* Dark background for the navbar */
     display: flex;
     justify-content: right;
     align-items: center;
@@ -72,7 +74,7 @@
   }
   
   .navbar a.active li {
-    color: #e74c3c; /* Active link color */
+    color:  rgb(93, 250, 93);
     font-weight: bold;
   }
   

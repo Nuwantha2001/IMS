@@ -53,7 +53,7 @@
     padding: 0.6rem 0.8rem;
     border: 1px solid #bdc3c7;
     border-radius: 0.3rem;
-    font-size: 0.9rem;
+    font-size: 1rem;
     transition: border-color 0.2s;
   }
   
@@ -87,6 +87,53 @@
     background-color: #95a5a6;
     cursor: not-allowed;
   }
+  /* Add these to your existing CSS */
+.ac_edit_button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  margin-right: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.ac_edit_button:hover {
+  background-color: #45a049;
+}
+
+.ac_delete_button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.ac_delete_button:hover {
+  background-color: #d32f2f;
+}
+
+.ac_cancel_button {
+  background-color: #e60000d3;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  margin-left: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.ac_cancel_button:hover {
+  background-color:  #ff9800,
+}
+
+/* Disabled state for buttons */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
   
   /* Table container */
   .ac_table_container {
@@ -108,12 +155,15 @@
     color: white;
     padding: 0.8rem 1rem;
     text-align: left;
+    font-weight: 600;
+    font-size: 1.2rem;
     position: sticky;
     top: 0;
   }
   
   .ac_table td {
     padding: 0.7rem 1rem;
+    font-size: 1rem;
     border-bottom: 1px solid #ecf0f1;
   }
   

@@ -47,34 +47,74 @@ const MonthlyAttendance = () => {
         setIsGeneratingPDF(true);
         
         try {
-            // Hide the month input during PDF generation
-            const monthInput = pdfContentRef.current.querySelector('input[type="month"]');
-            if (monthInput) monthInput.style.visibility = 'hidden';
-
-            const canvas = await html2canvas(pdfContentRef.current, {
-                scale: 2,
-                logging: false,
-                useCORS: true,
-                scrollY: -window.scrollY,
-                backgroundColor: '#ffffff'
+            // Prepare payment data
+            const paymentData = [{
+                month: month,
+                tr_id: userId,
+                name: name,
+                workedDays: summary.workedDays || 0,
+                holidays: summary.holidays || 0,
+                leaveDays: summary.leaveDays || 0,
+                allowance: summary.allowance || 0
+            }];
+    
+            // Store payment data
+            const paymentResponse = await axios.post('http://localhost:5000/store_payment', paymentData);
+            if (!paymentResponse.data.success) {
+                throw new Error(paymentResponse.data.message || 'Failed to store payment data');
+            }
+            // Store monthly payment data
+            const monthlypaymentResponse = await axios.post('http://localhost:5000/monthly_payment', paymentData);
+            if (!monthlypaymentResponse.data.success) {
+                throw new Error(monthlypaymentResponse.data.message || 'Failed to store monthly payment data');
+            }
+    
+            // Create a clone for PDF generation
+            const contentClone = pdfContentRef.current.cloneNode(true);
+            
+            // Replace all inputs with spans showing their values
+            const inputs = contentClone.querySelectorAll('input');
+            inputs.forEach(input => {
+                const span = document.createElement('span');
+                span.textContent = input.value;
+                span.style.width = input.offsetWidth + 'px';
+                span.style.minWidth = '100px';
+                span.style.margin = '0 2px';
+                input.parentNode.replaceChild(span, input);
             });
-
-            // Restore the month input visibility
-            if (monthInput) monthInput.style.visibility = 'visible';
-
+    
+            // Temporarily add to DOM
+            contentClone.style.position = 'absolute';
+            contentClone.style.left = '-9999px';
+            document.body.appendChild(contentClone);
+    
+            // Wait for fonts to load
+            await document.fonts.ready;
+    
+            const canvas = await html2canvas(contentClone, {
+                scale: 2,
+                logging: true,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                removeContainer: true // Clean up after capture
+            });
+    
+            // Remove clone
+            document.body.removeChild(contentClone);
+    
+            // Generate PDF
             const imgData = canvas.toDataURL('image/png', 1.0);
             const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgWidth = 190; // Reduced width to account for margins
-            const pageHeight = 277; // Reduced height to account for margins
+            const imgWidth = 190;
+            const pageHeight = 277;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             
             let heightLeft = imgHeight;
-            let position = 10; // Top margin
+            let position = 10;
             
             pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
             heightLeft -= pageHeight;
             
-            // Add new pages if content is longer than one page
             while (heightLeft >= 0) {
                 position = heightLeft - imgHeight + 10;
                 pdf.addPage();
@@ -84,8 +124,14 @@ const MonthlyAttendance = () => {
             
             pdf.save(`attendance_${month}_${name.replace(/\s+/g, '_')}.pdf`);
         } catch (error) {
-            console.error('Error generating PDF:', error);
-            alert('Error generating PDF. Please try again.');
+            console.error('Error:', error);
+            let errorMessage = 'Error generating PDF';
+            if (error.response) {
+                errorMessage = error.response.data?.message || error.response.statusText;
+            } else if (error.request) {
+                errorMessage = 'No response from server';
+            }
+            alert(errorMessage);
         } finally {
             setIsGeneratingPDF(false);
         }
@@ -125,7 +171,7 @@ const MonthlyAttendance = () => {
                         <label>ID:</label>
                         <input type="text" value={userId} readOnly /><br />
                         <label>Intern Type:</label>
-                        <input type="text" value="On-Job / General" readOnly />
+                        <input type="text" value="General" readOnly />
                     </div>
                 </div>
 
@@ -198,12 +244,12 @@ const MonthlyAttendance = () => {
                             </tr>
                             <tr>
                                 <td>Amount (Rs)</td>
-                                <td></td>
+                                <td>{summary.allowance}</td>
                             </tr>
                         </tbody>
                     </table>
 
-                    <div className="requested-by">Requested By: ______</div>
+                    <div className="requested-by">Requested By: ________________</div>
                 </div>
                              
                 <div className="note">

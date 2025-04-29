@@ -71,16 +71,16 @@
 .detail-row_1 label, .detail-row_2 label {
     width: 100px;
     font-weight: bold;
-    font-size: 0.9rem;
+    font-size: 1rem;
     margin-right: 10px;
 }
 
 .detail-row_1 input, .detail-row_2 input {
     margin-right: 20px;
-    font-size: 0.8rem;
+    font-size: 1rem;
     padding: 5px;
     border: none;
-    width: 200px;
+    width: 230px;
 }
 
 
@@ -94,7 +94,7 @@
     width: 48%;
     border-collapse: collapse;
     margin-bottom: 10px;
-    font-size: 0.9em;
+    font-size: 1em;
 }
 
 .attendance-table th, .attendance-table td {
@@ -106,6 +106,7 @@
 .attendance-table th {
     background-color: #f2f2f2;
     font-weight: bold;
+    color: black;
 }
 
 .summary {
@@ -116,7 +117,7 @@
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 10px;
-    font-size: 0.9em;
+    font-size: 1em;
 }
 
 .summary-table td {
@@ -137,7 +138,7 @@
 
 .note {
     margin-bottom: 20px;
-    font-size: 12px;
+    font-size: 0.9em;
     line-height: 1.4;
 }
 
@@ -156,6 +157,7 @@
 .approvals-table th {
     background-color: #f2f2f2;
     font-weight: bold;
+    color: black;
 }
 
 @media print {

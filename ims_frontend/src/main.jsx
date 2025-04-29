@@ -19,6 +19,7 @@ const WrappedApp = () => {
     '/manage_intern',
     '/calendar',
     '/uploadexcel',
+    '/payment',
     
   ];
 

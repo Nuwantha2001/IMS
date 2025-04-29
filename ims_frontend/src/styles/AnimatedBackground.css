@@ -32,15 +32,15 @@ body{
       0 0 50px #4fc3dc,
       0 0 100px #4fc3dc;
     animation: animate 15s linear infinite;
-    animation-duration: calc(125s / var(--i));
+    animation-duration: calc(1250s / var(--i));
   }
   
   .bubbles span:nth-child(even) {
-    background: #ff2d75;
+    background: rgb(93, 250, 93);
     box-shadow: 
-      0 0 0 10px #ff2d7544,
-      0 0 50px #ff2d75,
-      0 0 100px #ff2d75;
+      0 0 0 10px green,
+      0 0 50px   rgb(93, 250, 93),
+      0 0 100px   rgb(93, 250, 93);
   }
   
   @keyframes animate {

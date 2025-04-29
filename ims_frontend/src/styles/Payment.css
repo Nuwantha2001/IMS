@@ -1,0 +1,264 @@
+/* Payment container */
+.payment-container {
+  max-width: 1400px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #ffffffe8;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+.payment-container h1 {
+  font-size: 1.6rem;
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #3498db;
+}
+
+/* Selection container */
+.py_selection-container {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 30px;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.py_selection-group,
+.py_selection {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.py_selection label {
+  font-weight: 600;
+  margin-left: 30%;
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+.py_selection input {
+  padding: 8px 12px;
+  border: 1px solid #3498db;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  background-color: white;
+  color: #2c3e50;
+  transition: all 0.3s ease;
+}
+
+/* Input styles */
+.py_month-selector,
+.py_year-selector {
+  padding: 8px 12px;
+  border: 1px solid #3498db;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  background-color: white;
+  color: #2c3e50;
+  transition: all 0.3s ease;
+}
+
+.py_month-selector:hover,
+.py_year-selector:hover {
+  border-color: #2980b9;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.py_month-selector:focus,
+.py_year-selector:focus {
+  outline: none;
+  border-color: #2980b9;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+}
+
+.py_year-selector {
+  width: 100px;
+}
+
+/* Chart sections */
+.py_chart-section {
+  background: white;
+  padding: 20px;
+  width: 60%;
+  margin: 0 auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+}
+
+.py_chart-section h2 {
+  color: #2c3e50;
+  margin-top: 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #3498db;
+  font-size: 1.2rem;
+}
+
+.py_chart-container {
+  height: 400px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  margin-top: 20px;
+  position: relative;
+}
+
+/* Summary section */
+.py_summary-section {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.py_summary-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  flex: 1;
+  max-width: 300px;
+  border: 1px solid #e0e0e0;
+  transition: transform 0.3s ease;
+}
+
+.py_summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.py_summary-card h3 {
+  color: #2c3e50;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+
+.py_summary-card p {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2980b9;
+  margin: 0;
+}
+
+/* Table section */
+.py_table-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+  border: 1px solid #e0e0e0;
+}
+
+.py_table-section h2 {
+  color: #2c3e50;
+  margin-top: 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #3498db;
+  font-size: 1.2rem;
+}
+
+.py_payment-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.py_payment-table th {
+  background-color: #3498db;
+  color: white;
+  font-weight: 600;
+  padding: 12px;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.py_payment-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e0e0e0;
+  color: #2c3e50;
+  font-size: 0.9rem;
+}
+
+.py_payment-table tr:hover td {
+  background-color: #eaf2f8;
+}
+
+/* Loading and no-data states */
+.py_loading,
+.py_no-data {
+  text-align: center;
+  padding: 30px;
+  color: #7f8c8d;
+  font-style: italic;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 20px 0;
+  border: 1px dashed #bdc3c7;
+}
+
+/* Error message */
+.error {
+  color: #e74c3c;
+  background-color: #fdecea;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px 0;
+  text-align: center;
+  border: 1px solid #f5b7b1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .py_selection-container {
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+  }
+  
+  .py_summary-section {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .py_summary-card {
+    max-width: 100%;
+    width: 100%;
+  }
+  
+  .py_payment-table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-container {
+    padding: 15px;
+  }
+  
+  .py_selection-group {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+  
+  .py_month-selector,
+  .py_year-selector {
+    width: 100%;
+  }
+  
+  .py_chart-container {
+    height: 300px;
+  }
+}
