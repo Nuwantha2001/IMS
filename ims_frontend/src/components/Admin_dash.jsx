@@ -21,6 +21,7 @@ const Admin_dash = () => {
     const [showMonthDetails, setShowMonthDetails] = useState(false);
     const [showYearDetails, setShowYearDetails] = useState(false);
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [availableYears, setAvailableYears] = useState([]);
 
     const formatDateForDisplay = (dateString) => {
         if (!dateString) return 'N/A';
@@ -239,7 +240,7 @@ const Admin_dash = () => {
         labels: yearlyInterns.map(item => item.year),
         datasets: [
             {
-                label: 'Active Interns',
+                label: 'Interns',
                 data: yearlyInterns.map(item => item.count),
                 backgroundColor: 'rgba(93, 250, 93, 0.73)',
                 borderColor: 'rgb(93, 250, 93)',
@@ -278,22 +279,39 @@ const Admin_dash = () => {
         }
     };
 
+    useEffect(() => {
+        axios.get('http://localhost:5000/api/available_years')
+            .then(res => {
+                setAvailableYears(res.data.years || []);
+                // Optionally set default selected year to latest available
+                if (res.data.years && res.data.years.length > 0 && !res.data.years.includes(selectedYear)) {
+                    setSelectedYear(res.data.years[res.data.years.length - 1]);
+                }
+            })
+            .catch(err => {
+                console.error("Error fetching available years", err);
+            });
+    }, []);
+
     return (
         <div className='admin_dash-container'>
-            <h1>Admin Dashboard</h1>
+            <h1>Mobitel Network Operation and Planning Division Interns Summary</h1>
             <div className='a_chart-container'>
                             <div className='a_chart'>
                                 <div className="year-selector">
-                                    <h3>Monthly Active Interns</h3><div>
-                                    <label htmlFor="year-select">Year: </label>
-                                    <select id="year-select" value={selectedYear}
-                                        onChange={(e) => setSelectedYear(parseInt(e.target.value))} >
-                                        {Array.from({ length: 5 }, (_, i) => {
-                                            const year = new Date().getFullYear() - i;
-                                            return (
-                                                <option key={year} value={year}> {year} </option>);
-                                        })}
-                                    </select></div>
+                                    <h3>Monthly Active Interns</h3>
+                                    <div>
+                                        <label htmlFor="year-select">Year: </label>
+                                        <select
+                                            id="year-select"
+                                            value={selectedYear}
+                                            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                                        >
+                                            {availableYears.map((year) => (
+                                                <option key={year} value={year}>{year}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
                                 <Bar 
                                     data={monthlyChartData}
@@ -308,7 +326,7 @@ const Admin_dash = () => {
                                         } }}/>
                             </div>
                             <div className='a_chart'>
-                                <h3>Yearly Active Interns</h3>
+                                <h3>Yearly Intern Summary</h3>
                                 <Bar 
                                     data={yearlyChartData}
                                     options={{
@@ -332,6 +350,7 @@ const Admin_dash = () => {
                                 <table>
                                     <thead>
                                         <tr>
+                                            <th>No:</th>
                                             <th>Intern ID</th>
                                             <th>Name</th>
                                             <th>Mobile No</th>
@@ -344,6 +363,7 @@ const Admin_dash = () => {
                                     <tbody>
                                         {selectedMonthInterns.map((intern, index) => (
                                             <tr key={index}>
+                                                <td>{index + 1}</td>
                                                 <td>{intern.TR_ID}</td>
                                                 <td>{intern.Short_Name}</td>
                                                 <td>{intern.Mobile_No}</td>
@@ -360,14 +380,15 @@ const Admin_dash = () => {
 
                         {showYearDetails && (
                             <div className='details-panel'>
-                                <h3>Active Interns</h3>
+                                <h3>Interns Details</h3>
                                 {/* <h3>Interns Active in {selectedYearInterns.length > 0 ? 
                                     parseISO(selectedYearInterns[0].Start_Date).getFullYear() : 'Selected Year'}</h3> */}
                                 <button onClick={() => setShowYearDetails(false)} className='close-button'>Close</button>
                                 <table>
                                     <thead>
                                         <tr>
-                                        <th>Intern ID</th>
+                                            <th>No:</th>
+                                            <th>Intern ID</th>
                                             <th>Name</th>
                                             <th>Mobile No</th>
                                             <th>Institute</th>
@@ -379,6 +400,7 @@ const Admin_dash = () => {
                                     <tbody>
                                         {selectedYearInterns.map((intern, index) => (
                                             <tr key={index}>
+                                                <td>{index + 1}</td>
                                                 <td>{intern.TR_ID}</td>
                                                 <td>{intern.Short_Name}</td>
                                                 <td>{intern.Mobile_No}</td>
@@ -453,6 +475,7 @@ const Admin_dash = () => {
                 <table>
                     <thead>
                         <tr>
+                            <th>No:</th>
                             <th>Intern ID</th>
                             <th>Name</th>
                             <th>Mobile No</th>
@@ -464,6 +487,7 @@ const Admin_dash = () => {
                     <tbody>
                         {activeInterns.map((intern, index) => (
                             <tr key={index}>
+                                <td>{index + 1}</td>
                                 <td>{intern.TR_ID}</td>
                                 <td>{intern.Short_Name}</td>
                                 <td>{intern.Mobile_No}</td>

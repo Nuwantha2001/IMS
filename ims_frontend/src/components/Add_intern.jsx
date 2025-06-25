@@ -37,18 +37,18 @@ const Add_intern = () => {
         console.log("Excel data", parsedData);
         
         const parsedSummary = parsedData.map((row) => ({
-          mr_mrs: row["MR/MS"] || row["Mr/Mrs"],
-          name: row["Name"],
-          short_name: row["Short Name"],
+          mr_mrs: row["MR/MS"] || row["MR/MS"] || row["MR/MS/MRS"],
+          name: row["Name"] || row["FULL NAME (USING BLOCK LETTERS)"],
+          short_name: row["Short Name"] || row["SHORT NAME ( K.L.P.GUNASENA)"],
           address: row["ADDRESS"] || row["Address"],
-          mobile_no: row["MOBILE NO"] || row["Mobile No"],
-          nic: row["ID NO"] || row["NIC"] || row["ID NO"],
+          mobile_no: row["MOBILE NO"] || row["Mobile No"] || row["MOBILE NUMBER"],
+          nic: row["ID NO"] || row["NIC NUMBER"] || row["ID NO"],
           institute: row["INSTITUTE"] || row["Institute"],
           programme: row["PROGRAM"] || row["Programme"],
-          bank: row["BANK"] || row["Bank"],
-          branch: row["BRANCH"] || row["Branch"],
-          acc_no: row["ACCOUNT NO"] || row["Account No"],
-          name_2: row["Name2"] || row["Name 2"],
+          bank: row["BANK NAME"] || row["Bank"],
+          branch: row["BRANCH NAME"] || row["Branch"],
+          acc_no: row["ACCOUNT NUMBER"] || row["Account No"],
+          name_2: row["Name2"] || row["Name 2"] || row["NAME TWO"],
         }));
 
         setSummary(parsedSummary);
@@ -123,7 +123,7 @@ const Add_intern = () => {
 
   return (
     <div className="ad_pageContainer">
-      <h1>Add New Intern</h1>
+      <h1>New Intern Registration</h1>
 
       <div className="ad_pageheader">
         <label>Training ID:</label>
@@ -132,10 +132,11 @@ const Add_intern = () => {
         <input type="date" name="s_date" value={formData.s_date} onChange={handleInputChange} /><br />
         <label>End Date:</label>
         <input type="date" name="e_date" value={formData.e_date} onChange={handleInputChange} /><br />
-        <label>Actual End Date:</label>
+        {/*<label>Actual End Date:</label>
         <input type="date" name="actual" value={formData.actual} onChange={handleInputChange} /><br />
         <label>Extended Period:</label>
         <input type="text" name="extended_period" value={formData.extended_period} onChange={handleInputChange} /><br />
+        */}
         <label>Category:</label>
         <input type="text" name="category" value={formData.category} onChange={handleInputChange} /><br />
         <label>Status:</label>
@@ -144,31 +145,34 @@ const Add_intern = () => {
         <input type="text" name="memo_no" value={formData.memo_no} onChange={handleInputChange} /><br />
         <label>CV:</label>
         <input type="text" name="cv" value={formData.cv} onChange={handleInputChange} /><br />
-        <label>NDA:</label>
+        {/*<label>NDA:</label>
         <input type="text" name="nda" value={formData.nda} onChange={handleInputChange} /><br />
+      
+        */}
         <label>Appointment Letter:</label>
         <input type="text" name="appointment" value={formData.appointment} onChange={handleInputChange} /><br />
-        <label>Certificate:</label>
+        {/*<label>Certificate:</label>
         <input type="text" name="certificate" value={formData.certificate} onChange={handleInputChange} /><br />
+        */}
         <label>Reference By:</label>
         <input type="text" name="referance" value={formData.referance} onChange={handleInputChange} /><br />
         <label>Password:</label>
         <input type="text" name="password" value={formData.password} onChange={handleInputChange} /><br />
         <label>Type:</label>
         <input type="text" name="type" value={formData.type} onChange={handleInputChange} /><br />
-        <label>Choose Excel:</label>
+        <label>Upload Excel:</label>
         <input type="file" accept=".xlsx, .xls" onChange={handleFileChange} />
       </div>
 
       {summary.length > 0 && (
         <div className="ad_exceltable">
-          <h2>Intern Details</h2>
+          <h2>Details</h2>
           <div className="ad_tableContainer">
             <table className="ad_table" border="1">
               <thead>
                 <tr>
-                  <th>Field</th>
-                  <th>Value</th>
+                  <th>Required Info</th>
+                  <th>Intern Information</th>
                 </tr>
               </thead>
               <tbody>
@@ -185,8 +189,8 @@ const Add_intern = () => {
                     <tr><td>Programme</td><td>{row.programme}</td></tr>
                     <tr><td>Start Date</td><td>{formData.s_date}</td></tr>
                     <tr><td>End Date</td><td>{formData.e_date}</td></tr>
-                    <tr><td>Actual End Date</td><td>{formData.actual}</td></tr>
-                    <tr><td>Extended Period</td><td>{formData.extended_period}</td></tr>
+                    {/*<tr><td>Actual End Date</td><td>{formData.actual}</td></tr>
+                    <tr><td>Extended Period</td><td>{formData.extended_period}</td></tr>*/}
                     <tr><td>Category</td><td>{formData.category}</td></tr>
                     <tr><td>Bank</td><td>{row.bank}</td></tr>
                     <tr><td>Branch</td><td>{row.branch}</td></tr>
@@ -194,9 +198,9 @@ const Add_intern = () => {
                     <tr><td>Memo No</td><td>{formData.memo_no}</td></tr>
                     <tr><td>Status</td><td>{formData.status}</td></tr>
                     <tr><td>CV</td><td>{formData.cv}</td></tr>
-                    <tr><td>NDA</td><td>{formData.nda}</td></tr>
+                    {/* <tr><td>NDA</td><td>{formData.nda}</td></tr>*/}
                     <tr><td>Appointment Letter</td><td>{formData.appointment}</td></tr>
-                    <tr><td>Certificate</td><td>{formData.certificate}</td></tr>
+                    {/*<tr><td>Certificate</td><td>{formData.certificate}</td></tr> */}
                     <tr><td>Reference By</td><td>{formData.referance}</td></tr>
                     <tr><td>Name2</td><td>{row.name_2}</td></tr>
                     <tr><td>Password</td><td>{formData.password}</td></tr>

@@ -218,6 +218,39 @@ const Excel = () => {
             </div>
           </div>
         )}
+        <h3>Note:</h3>
+        <p className='table-structure'>Below table shows the table structure of the data being uploaded and the name of the Excel sheet is 'Information' or 'Infomation'. </p>
+        <table className='dump_table'>
+          <thead>
+                  <tr>
+                    <th>TR ID</th>
+                    <th>MR/MS</th>
+                    <th>Name</th>
+                    <th>Short Name</th>
+                    <th>Address</th>
+                    <th>Mobile No</th>
+                    <th>ID No</th>
+                    <th>Institute</th>
+                    <th>Program</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Actual End Date</th>
+                    <th>Extended Period</th>
+                    <th>Category</th>
+                    <th>Bank</th>
+                    <th>Branch</th>
+                    <th>Account No</th>
+                    <th>Memo No</th>
+                    <th>Status</th>
+                    <th>CV</th>
+                    <th>NDA</th>
+                    <th>Appointment Letter</th>
+                    <th>Certificate</th>
+                    <th>Reference By</th>
+                    <th>Name2</th>
+                  </tr>
+                </thead>
+        </table>
       </div>
     );
 };

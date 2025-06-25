@@ -279,6 +279,7 @@ const Manage_intern = () => {
                 <table>
                     <thead>
                         <tr>
+                            <th>No:</th>
                             <th>Intern ID</th>
                             <th>Short Name</th>
                             <th>Mobile No</th>
@@ -292,6 +293,7 @@ const Manage_intern = () => {
                         {filteredInterns.map((intern, index) => (
                             <React.Fragment key={index}>
                                 <tr>
+                                    <td>{index + 1}</td>
                                     <td>{intern.TR_ID}</td>
                                     <td>{intern.Short_Name}</td>
                                     <td>{intern.Mobile_No}</td>

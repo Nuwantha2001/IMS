@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Payment.css';
 
 // Register ChartJS components
@@ -23,6 +24,8 @@ const Payment = () => {
     const [loading, setLoading] = useState(false);
     const [chartLoading, setChartLoading] = useState(false);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
+    
 
     useEffect(() => {
         const fetchData = async () => {
@@ -70,6 +73,7 @@ const Payment = () => {
         labels: monthlyData.map(item => {
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             return monthNames[parseInt(item.month.slice(5, 7)) - 1];
+            
         }),
         datasets: [
             {
@@ -105,13 +109,17 @@ const Payment = () => {
 
     return (
         <div className="payment-container">
-            <h1>Intern Allowance</h1>
-            
+            <div className="payment-container-header">
+                <h1>View Automatically Update Intern's Allowance</h1>
+            </div>
+            <div>
+                <button onClick={() => navigate('/payment')} className='py-btn'>Back</button>
+            </div>
             
             <div className="py_chart-section">
                 <div className="py_selection">
                     <h2>Monthly Allowance Overview</h2>
-                    <label> Year:</label>
+                    <label> </label>
                     <input 
                         type='number' value={year} 
                         onChange={(e) => setYear(e.target.value)}  />

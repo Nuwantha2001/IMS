@@ -1,264 +1,396 @@
-/* Payment container */
+/* Payment Dashboard Styles */
 .payment-container {
   max-width: 1400px;
-  margin: 20px auto;
-  padding: 20px;
-  background-color: #ffffffe8;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 2rem auto;
+  background-color: #ffffff00;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  color: #2c3e50;
 }
 
-/* Header */
+.payment-container-header {
+  background-color: white;
+  border-radius: 10px;
+}
+
 .payment-container h1 {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   color: #2c3e50;
   text-align: center;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #3498db;
+  padding: 1rem 0;
+  padding-bottom: 1rem;
+  border: 3px solid #3498db;
+  border-radius: 10px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+.py-btn {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+  /*background-color: #3498db;*/
+  background-color: #db3434;
+  color: white;
+  margin-left: 85%;
 }
 
-/* Selection container */
+
+/* Selection Container */
 .py_selection-container {
   display: flex;
   justify-content: center;
-  gap: 30px;
-  margin-bottom: 30px;
-  background-color: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+  background-color: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e0e6ed;
 }
 
-.py_selection-group,
+.py_selection-group {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
 .py_selection {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 1rem;
 }
 
 .py_selection label {
   font-weight: 600;
-  margin-left: 30%;
   color: #2c3e50;
-  font-size: 0.95rem;
-}
-.py_selection input {
-  padding: 8px 12px;
-  border: 1px solid #3498db;
-  border-radius: 4px;
-  font-size: 0.95rem;
-  background-color: white;
-  color: #2c3e50;
-  transition: all 0.3s ease;
+  font-size: 1rem;
+  min-width: 100px;
+  margin: 0;
 }
 
-/* Input styles */
+/* Input and Select Styles */
 .py_month-selector,
-.py_year-selector {
-  padding: 8px 12px;
-  border: 1px solid #3498db;
-  border-radius: 4px;
-  font-size: 0.95rem;
+.py_selection input {
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d9e6;
+  border-radius: 8px;
+  font-size: 1rem;
   background-color: white;
   color: #2c3e50;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .py_month-selector:hover,
-.py_year-selector:hover {
-  border-color: #2980b9;
-  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+.py_selection input:hover {
+  border-color: #3498db;
+  box-shadow: 0 2px 6px rgba(52, 152, 219, 0.15);
 }
 
 .py_month-selector:focus,
-.py_year-selector:focus {
+.py_selection input:focus {
   outline: none;
   border-color: #2980b9;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
 }
 
-.py_year-selector {
-  width: 100px;
-}
-
-/* Chart sections */
+/* Chart Sections */
 .py_chart-section {
   background: white;
-  padding: 20px;
-  width: 60%;
-  margin: 0 auto;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-  border: 1px solid #e0e0e0;
+  padding: 1.5rem;
+  width: 70%;
+  margin: 0 auto 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e0e6ed;
 }
 
 .py_chart-section h2 {
   color: #2c3e50;
-  margin-top: 0;
-  padding-bottom: 10px;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
   border-bottom: 2px solid #3498db;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .py_chart-container {
-  height: 400px;
+  height: 420px;
   width: 100%;
-  background: rgba(255, 255, 255, 0.8);
-  margin-top: 20px;
+  margin-top: 1.5rem;
   position: relative;
 }
 
-/* Summary section */
+/* Summary Section */
 .py_summary-section {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  margin-bottom: 30px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2.5rem;
 }
 
 .py_summary-card {
   background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   text-align: center;
-  flex: 1;
-  max-width: 300px;
-  border: 1px solid #e0e0e0;
-  transition: transform 0.3s ease;
+  border: 1px solid #e0e6ed;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .py_summary-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.py_summary-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #3498db;
 }
 
 .py_summary-card h3 {
   color: #2c3e50;
-  margin-top: 0;
-  margin-bottom: 15px;
+  margin: 0 0 1rem 0;
   font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .py_summary-card p {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.8rem;
+  font-weight: 700;
   color: #2980b9;
   margin: 0;
 }
 
-/* Table section */
+/* Table Section */
 .py_table-section {
   background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 30px;
-  border: 1px solid #e0e0e0;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+  border: 1px solid #e0e6ed;
 }
 
 .py_table-section h2 {
   color: #2c3e50;
-  margin-top: 0;
-  padding-bottom: 10px;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
   border-bottom: 2px solid #3498db;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
+  font-weight: 600;
 }
 
 .py_payment-table {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 1rem;
 }
 
 .py_payment-table th {
   background-color: #3498db;
   color: white;
   font-weight: 600;
-  padding: 12px;
+  padding: 1rem;
   text-align: left;
   font-size: 0.95rem;
+  position: sticky;
+  top: 0;
+}
+
+.py_payment-table th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.py_payment-table th:last-child {
+  border-top-right-radius: 8px;
 }
 
 .py_payment-table td {
-  padding: 12px;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 1rem;
+  border-bottom: 1px solid #e0e6ed;
   color: #2c3e50;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  vertical-align: middle;
+}
+
+.py_payment-table tr:last-child td {
+  border-bottom: none;
 }
 
 .py_payment-table tr:hover td {
-  background-color: #eaf2f8;
+  background-color: #f5f9fd;
 }
 
-/* Loading and no-data states */
+/* Status Badges */
+.py_status {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.py_status.paid {
+  background-color: #e3f9e5;
+  color: #27ae60;
+}
+
+.py_status.pending {
+  background-color: #fff4e5;
+  color: #f39c12;
+}
+
+.py_status.failed {
+  background-color: #ffebee;
+  color: #e74c3c;
+}
+
+/* Loading and No Data States */
 .py_loading,
 .py_no-data {
   text-align: center;
-  padding: 30px;
+  padding: 2.5rem;
   color: #7f8c8d;
-  font-style: italic;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  margin: 20px 0;
-  border: 1px dashed #bdc3c7;
+  font-size: 1.1rem;
+  background-color: #f8fafc;
+  border-radius: 10px;
+  margin: 1.5rem 0;
+  border: 1px dashed #d1d9e6;
 }
 
-/* Error message */
+.py_loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Error Message */
 .error {
   color: #e74c3c;
-  background-color: #fdecea;
-  padding: 15px;
-  border-radius: 8px;
-  margin: 20px 0;
+  background-color: #ffebee;
+  padding: 1.25rem;
+  border-radius: 10px;
+  margin: 1.5rem 0;
   text-align: center;
-  border: 1px solid #f5b7b1;
+  border: 1px solid #ffcdd2;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+  .py_chart-section {
+    width: 85%;
+  }
+}
+
 @media (max-width: 768px) {
+  .payment-container {
+    padding: 1.5rem;
+  }
+  
   .py_selection-container {
     flex-direction: column;
-    gap: 15px;
-    align-items: center;
+    gap: 1.5rem;
+    align-items: stretch;
+    padding: 1.5rem;
+  }
+  
+  .py_selection-group {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .py_selection {
+    width: 100%;
+  }
+  
+  .py_selection label {
+    min-width: auto;
+    margin-bottom: 0.5rem;
+  }
+  
+  .py_chart-section {
+    width: 100%;
+    padding: 1.25rem;
   }
   
   .py_summary-section {
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-  }
-  
-  .py_summary-card {
-    max-width: 100%;
-    width: 100%;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
   
   .py_payment-table {
     display: block;
     overflow-x: auto;
+    white-space: nowrap;
   }
 }
 
 @media (max-width: 480px) {
   .payment-container {
-    padding: 15px;
+    padding: 1.25rem;
+    margin: 1rem auto;
   }
   
-  .py_selection-group {
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-  }
-  
-  .py_month-selector,
-  .py_year-selector {
-    width: 100%;
+  .payment-container h1 {
+    font-size: 1.5rem;
   }
   
   .py_chart-container {
     height: 300px;
   }
+  
+  .py_table-section,
+  .py_chart-section {
+    padding: 1rem;
+  }
+  
+  .py_payment-table th,
+  .py_payment-table td {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Animation for loading state */
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.py_loading {
+  animation: pulse 1.5s infinite;
+}
+
+/* Chart tooltip customization */
+.chartjs-tooltip {
+  background: rgba(0, 0, 0, 0.8) !important;
+  border-radius: 4px !important;
+  padding: 0.5rem 1rem !important;
+  color: white !important;
+  font-family: inherit !important;
 }

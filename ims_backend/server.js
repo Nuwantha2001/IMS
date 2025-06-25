@@ -1,10 +1,9 @@
 const express = require('express');
-const mysql = require('mysql');
+const mysql = require('mysql2/promise');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
-
 
 // Initialize the Express app
 const app = express();
@@ -15,8 +14,8 @@ const PORT = 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Database connection
-const db = mysql.createConnection({
+// Database pool connection
+const db = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'Wicki123@',
@@ -24,18 +23,21 @@ const db = mysql.createConnection({
   //port: process.env.DB_PORT || 3306,
 });
 
-// Connect to the database
-db.connect((err) => {
-  if (err) {
-    console.error('Database connection failed:', err);
-  } else {
+// Test connection
+(async () => {
+  try {
+    const conn = await db.getConnection();
     console.log('Database connected successfully');
+    conn.release();
+  } catch (err) {
+    console.error('Database connection failed:', err);
   }
-});
+})();
+
 //---------------------------------------------------------------------
 //login
 //----------------------------------------------------------------
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
   const { userId, password, userType } = req.body;
 
   console.log("Login attempt:", { userId, userType });
@@ -46,29 +48,26 @@ app.post('/login', (req, res) => {
 
   const query = `SELECT TR_ID, Short_Name, Password FROM intern_data WHERE TR_ID = ? AND Status='Active'`;
 
-  db.query(query, [userId, userType], (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
-
+  try {
+    const [results] = await db.query(query, [userId]);
     if (results.length > 0) {
       const user = results[0];
-
       if(password == user.Password) {
         return res.json({ success: true, message: "Login successful", user: { id: user.TR_ID, name: user.Short_Name } });
       }
       else {
         return res.json({ success: false, message: "Invalid Password" });
       }
-
     } else {
       return res.json({ success: false, message: "Invalid Credentials" });
     }
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ success: false, message: "Database error" });
+  }
 });
 
-app.post('/adminlogin', (req, res) => {
+app.post('/adminlogin', async (req, res) => {
   const { userId, password, userType } = req.body;
 
   console.log("Admin Login attempt:", { userId, userType });
@@ -79,56 +78,47 @@ app.post('/adminlogin', (req, res) => {
 
   const query = `SELECT * FROM admin WHERE user_id = ? AND user_type = ?`;
 
-  db.query(query, [userId, userType], (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
-
+  try {
+    const [results] = await db.query(query, [userId, userType]);
     if (results.length > 0) {
       const user = results[0];
-
       if (password == user.password) {
         return res.json({ success: true, message: "Login successful" });
       } else {
         return res.json({ success: false, message: "Invalid Password" });
       }
-
     } else {
       return res.json({ success: false, message: "Invalid Credentials" });
     }
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ success: false, message: "Database error" });
+  }
 });
-
-
-
 
 //--------------------------------------------------------------------------------------------------------------------
 // Attendance Form Handling
 // //--------------------------------------------------------------------------------------------------------------------
-app.post('/attendance', (req, res) => {
+app.post('/attendance', async (req, res) => {
   const { userId } = req.body;
-  
   if (!userId) {
     return res.status(400).json({ success: false, message: "User ID is required" });
   }
-
   const query = 'SELECT Short_Name FROM intern_data WHERE TR_ID = ?';
-  db.query(query, [userId], (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
-
+  try {
+    const [results] = await db.query(query, [userId]);
     if (results.length > 0) {
       const user = results[0];
       return res.json({ success: true,  name: user.Short_Name || 'Unknown' });
     }
     return res.status(404).json({ success: false, message: "User not found" });
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ success: false, message: "Database error" });
+  }
 });
 
-app.post('/ins_attendance', (req, res) => {
+app.post('/ins_attendance', async (req, res) => {
   const { date, userId, timeSlot, division } = req.body; // Ensure 'userId' is used
 
   //console.log('Received data:', req.body);
@@ -139,36 +129,36 @@ app.post('/ins_attendance', (req, res) => {
   }
 
   const query = `INSERT INTO attendance (tr_id, date, time_slot, division) VALUES (?, ?, ?, ?)`; 
-  db.query(query, [userId, date, timeSlot, division], (err, result) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
+  try {
+    const [result] = await db.query(query, [userId, date, timeSlot, division]);
     res.json({ message: 'Attendance added successfully!', insertId: result.insertId });
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ error: "Database error" });
+  }
 });
 //---------------------------------------------------------------------
 //certificate request form
 //----------------------------------------------------------------  
 // Route to check if request already exists
-app.post('/check-request', (req, res) => {
+app.post('/check-request', async (req, res) => {
   const { userId } = req.body;
   if (!userId) {
       return res.status(400).json({ success: false, message: "User ID is required" });
   }
 
   const checkQuery = `SELECT * FROM request WHERE tr_id = ? AND alert = "Requested" OR alert = "Issued"`;
-  db.query(checkQuery, [userId], (err, results) => {
-      if (err) {
-          console.error("Database error:", err);
-          return res.status(500).json({ success: false, message: "Database error" });
-      }
+  try {
+      const [results] = await db.query(checkQuery, [userId]);
       res.json({ exists: results.length > 0 });
-  });
+  } catch (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ success: false, message: "Database error" });
+  }
 });
 
 // Route to submit certificate request
-app.post('/certificate', (req, res) => {
+app.post('/certificate', async (req, res) => {
   const { userId, name, start_date, end_date } = req.body;
 
   // Validate required fields
@@ -178,72 +168,63 @@ app.post('/certificate', (req, res) => {
 
   // Check if request already exists
   const checkQuery = `SELECT * FROM request WHERE tr_id = ? AND alert = "Requested" OR alert = "Issued"`;
-  db.query(checkQuery, [userId], (err, results) => {
-      if (err) {
-          console.error("Database error:", err);
-          return res.status(500).json({ success: false, message: "Database error" });
-      }
+  try {
+      const [results] = await db.query(checkQuery, [userId]);
       if (results.length > 0) {
           return res.status(409).json({ success: false, message: "You have already submitted a certificate request" });
       }
 
       // Insert new request
       const insertQuery = `INSERT INTO request (tr_id, name, start_date, end_date) VALUES (?, ?, ?, ?)`;
-      db.query(insertQuery, [userId, name, start_date, end_date], (err, results) => {
-          if (err) {
-              console.error("Database error:", err);
-              return res.status(500).json({ success: false, message: "Database error" });
-          }
+      const [insertResult] = await db.query(insertQuery, [userId, name, start_date, end_date]);
 
-          // If insert is successful, update intern_data table
-          const value = "Requested";
-          const updateQuery = `UPDATE intern_data SET Certificate=? WHERE TR_ID = ?`;
-          db.query(updateQuery, [value, userId], (err, updateResults) => {
-              if (err) {
-                  console.error("Database error:", err);
-                  return res.status(500).json({ success: false, message: "Database error" });
-              }
-              return res.json({ success: true, message: "Certificate request submitted successfully" });
-          });
-      });
-  });
+      // If insert is successful, update intern_data table
+      const value = "Requested";
+      const updateQuery = `UPDATE intern_data SET Certificate=? WHERE TR_ID = ?`;
+      await db.query(updateQuery, [value, userId]);
+
+      return res.json({ success: true, message: "Certificate request submitted successfully" });
+  } catch (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ success: false, message: "Database error" });
+  }
 });
 
 //---------------------------------------------------------------------
 //Admin Dashboard
 //----------------------------------------------------------------
-app.get('/admin_summary', (req, res) => {
+app.get('/admin_summary', async (req, res) => {
   const query = `
     SELECT 
       (SELECT COUNT(*) FROM intern_data WHERE Status = 'Active') AS active_count,
       (SELECT COUNT(*) FROM intern_data WHERE Status = 'Inactive') AS inactive_count
   `;
 
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
+  try {
+    const [results] = await db.query(query);
     res.json({ success: true, summary: results[0] });
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ success: false, message: "Database error" });
+  }
 });
-app.get('/admin_certificate', (req, res) => {
+app.get('/admin_certificate', async (req, res) => {
   const query = `
     SELECT 
       (SELECT COUNT(*) FROM intern_data WHERE Certificate = 'Requested') AS request_count,
       (SELECT COUNT(*) FROM intern_data WHERE Certificate = 'Issued') AS issue_count
   `;
 
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
+  try {
+    const [results] = await db.query(query);
     res.json({ success: true, certificate: results[0] });
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ success: false, message: "Database error" });
+  }
 });
 
-app.get('/daily_attendance', (req, res) => {
+app.get('/daily_attendance', async (req, res) => {
   const currentDate = new Date().toISOString().split('T')[0]; 
   const query = `
     SELECT attendance.tr_id, intern_data.Short_Name, attendance.time_slot, attendance.division 
@@ -251,77 +232,104 @@ app.get('/daily_attendance', (req, res) => {
     INNER JOIN intern_data ON attendance.tr_id = intern_data.TR_ID
     WHERE attendance.date = ?
   `;
-  db.query(query, [currentDate], (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
+  try {
+    const [results] = await db.query(query, [currentDate]);
     res.json({ success: true, attendance: results });
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ success: false, message: "Database error" });
+  }
 });
 
-app.get('/active_interns', (req, res) => {
+app.get('/active_interns', async (req, res) => {
   const query = 'SELECT TR_ID, Short_Name, Mobile_No, Start_Date, End_Date, Actual_End_Date FROM intern_data WHERE Status = "Active"';
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
+  try {
+    const [results] = await db.query(query);
     res.json(results);
     //console.log('Active Interns detais',results);
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ success: false, message: "Database error" });
+  }
 })
-app.get('/certificate_request', (req, res) => {
+app.get('/certificate_request', async (req, res) => {
   const query = 'SELECT tr_id, name, start_date, end_date FROM request WHERE alert = "Requested"';
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
+  try {
+    const [results] = await db.query(query);
     res.json(results);
     //console.log('Certificate detais',results);
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ success: false, message: "Database error" });
+  }
 })
 
 // For monthly active interns
-app.get('/api/monthly_active_interns', (req, res) => {
+app.get('/api/monthly_active_interns', async (req, res) => {
   const query = `
       SELECT TR_ID, Short_Name, Mobile_No, Institute, Programme, 
              Start_Date, End_Date
       FROM intern_data
   `;
   
-  db.query(query, (err, results) => {
-      if (err) {
-          console.error("Database error:", err);
-          return res.status(500).json({ error: 'Database error' });
-      }
-      res.json(results);
-  });
+  try {
+    const [results] = await db.query(query);
+    res.json(results);
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ error: 'Database error' });
+  }
 });
 
 // For yearly active interns
-app.get('/api/yearly_active_interns', (req, res) => {
+app.get('/api/yearly_active_interns', async (req, res) => {
   const query = `
       SELECT TR_ID, Short_Name, Mobile_No, Institute, Programme, 
              Start_Date, End_Date
       FROM intern_data
   `;
   
-  db.query(query, (err, results) => {
-      if (err) {
-          console.error("Database error:", err);
-          return res.status(500).json({ error: 'Database error' });
-      }
-      res.json(results);
-  });
+  try {
+    const [results] = await db.query(query);
+    res.json(results);
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ error: 'Database error' });
+  }
 });
+
+// Get all available years from intern_data (for frontend year dropdown)
+app.get('/api/available_years', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        MIN(YEAR(Start_Date)) AS minYear, 
+        MAX(YEAR(End_Date)) AS maxYear 
+      FROM intern_data
+      WHERE Start_Date IS NOT NULL AND End_Date IS NOT NULL
+    `;
+    const [rows] = await db.query(query);
+    const minYear = rows[0].minYear;
+    const maxYear = rows[0].maxYear;
+    let years = [];
+    if (minYear && maxYear) {
+      for (let y = minYear; y <= maxYear; y++) {
+        years.push(y);
+      }
+    }
+    res.json({ years });
+  } catch (err) {
+    console.error("Error fetching available years:", err);
+    res.status(500).json({ years: [] });
+  }
+});
+
 
 //----------------------------------------------------------------------------------
 //Payment
 //----------------------------------------------------------------------------------
 // Get payment data for a specific month
-app.get('/payment_data/:month', (req, res) => {
+app.get('/payment_data/:month', async (req, res) => {
   const { month } = req.params;
 
   const query = `
@@ -338,13 +346,13 @@ app.get('/payment_data/:month', (req, res) => {
     ORDER BY name ASC
   `;
 
-  db.query(query, [month], (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ error: 'Database error' });
-    }
+  try {
+    const [results] = await db.query(query, [month]);
     res.json(results);
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ error: 'Database error' });
+  }
 });
 
 
@@ -358,23 +366,185 @@ app.get('/monthly_pay/:year', async (req, res) => {
           WHERE month LIKE '${year}-%'
           ORDER BY month ASC
       `;
-      db.query(query, (err, result) => {
-          if (err) {
-              console.error("Database error:", err);
-              return res.status(500).json({ error: 'Database error' });
-          }
-          res.json(result);
-      });
+      const [result] = await db.query(query);
+      res.json(result);
   } catch (error) {
       console.error("Error fetching monthly payment data:", error);
       res.status(500).json({ error: 'Internal server error' });
   }
 });
 //---------------------------------------------------------------------------------
+// Update Payment Manual
+//---------------------------------------------------------------------------------
+
+// 1. Get active interns
+app.get('/api/interns/active', async (req, res) => {
+  const query = 'SELECT TR_ID, Short_Name FROM intern_data WHERE Status = "Active"';
+  try {
+    const [results] = await db.query(query);
+    res.json(results);
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// 2. Create new payment (with duplicate check)
+app.post('/api/payments', async (req, res) => {
+  const { internId, month, name, workedDays, holidays, leaveDays, allowance } = req.body;
+
+  if (!internId || !month || !name || workedDays === undefined || allowance === undefined) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  // First check if a record already exists
+  const checkQuery = 'SELECT * FROM mpayment WHERE tr_id = ? AND month = ?';
+  try {
+    const [checkResults] = await db.query(checkQuery, [internId, month]);
+    if (checkResults.length > 0) {
+      return res.status(409).json({ 
+        error: 'Payment record already exists for this intern and month',
+        existingRecord: checkResults[0]
+      });
+    }
+
+    // Proceed with insertion if no existing record
+    const paymentData = {
+      tr_id: internId,
+      month: month,
+      name: name,
+      workday: parseInt(workedDays) || 0,
+      holiday: parseInt(holidays) || 0,
+      leave: parseInt(leaveDays) || 0,
+      allowance: parseFloat(allowance)
+    };
+
+    const insertQuery = 'INSERT INTO mpayment SET ?';
+    const [result] = await db.query(insertQuery, paymentData);
+    res.json({ 
+      success: true,
+      message: 'Payment saved successfully',
+      paymentId: result.insertId
+    });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// 3. Update existing payment
+app.put('/api/payments', async (req, res) => {
+  const { internId, month, name, workedDays, holidays, leaveDays, allowance } = req.body;
+
+  if (!internId || !month || !name || workedDays === undefined || allowance === undefined) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  const paymentData = {
+    name: name,
+    workday: parseInt(workedDays) || 0,
+    holiday: parseInt(holidays) || 0,
+    leave: parseInt(leaveDays) || 0,
+    allowance: parseFloat(allowance)
+  };
+
+  const query = 'UPDATE mpayment SET ? WHERE tr_id = ? AND month = ?';
+  try {
+    const [result] = await db.query(query, [paymentData, internId, month]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Payment record not found' });
+    }
+    
+    res.json({ 
+      success: true,
+      message: 'Payment updated successfully',
+      affectedRows: result.affectedRows
+    });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ error: 'Failed to update payment' });
+  }
+});
+
+// 4. Delete payment record
+app.delete('/api/payments', async (req, res) => {
+  const { internId, month } = req.body;
+
+  if (!internId || !month) {
+    return res.status(400).json({ error: 'Missing internId or month' });
+  }
+
+  const query = 'DELETE FROM mpayment WHERE tr_id = ? AND month = ?';
+  try {
+    const [result] = await db.query(query, [internId, month]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Payment record not found' });
+    }
+    
+    res.json({ 
+      success: true,
+      message: 'Payment deleted successfully',
+      affectedRows: result.affectedRows
+    });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ error: 'Failed to delete payment' });
+  }
+});
+
+// 5. Get payments by month
+app.get('/api/payments_month/:month', async (req, res) => {
+  const { month } = req.params;
+
+  const query = `SELECT * FROM mpayment WHERE month = ? ORDER BY name ASC`;
+
+  try {
+    const [results] = await db.query(query, [month]);
+    res.json(results);
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ 
+      success: false,
+      error: 'Database error',
+      details: err.sqlMessage 
+    });
+  }
+});
+
+// 6. Get yearly payment summary
+app.get('/api/payments_summary/:year', async (req, res) => {
+  const { year } = req.params;
+  
+  const query = 'SELECT month, SUM(allowance) AS totalPay FROM mpayment WHERE month LIKE ? GROUP BY month ORDER BY month ASC';  
+
+  try {
+    const [results] = await db.query(query, [`${year}-%`]);
+    // Ensure we have all 12 months in the response
+    const allMonths = Array.from({ length: 12 }, (_, i) => {
+      const month = (i + 1).toString().padStart(2, '0');
+      return `${year}-${month}`;
+    });
+
+    const completeResults = allMonths.map(month => {
+      const found = results.find(r => r.month === month);
+      return found || {
+        month,
+        totalPay: 0,
+      };
+    });
+
+    console.log("Yearly payment summary:", completeResults);
+    res.json(completeResults);
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ error: 'Database error' });
+  }
+});
+//---------------------------------------------------------------------------------
 //add intern
 //---------------------------------------------------------------------------------
 
-app.post('/upload', (req, res) => {
+app.post('/upload', async (req, res) => {
   const { parsedData } = req.body;
 
   console.log("Received data:", parsedData);
@@ -397,12 +567,8 @@ app.post('/upload', (req, res) => {
   const internIds = parsedData.map(row => row.tr_id);
   const checkIDQuery = 'SELECT TR_ID FROM intern_data WHERE TR_ID IN (?)';
 
-  db.query(checkIDQuery, [internIds], (checkErr, results) => {
-    if (checkErr) {
-      console.error('Error checking data:', checkErr);
-      return res.status(500).json({ message: 'Database error during duplicate check.' });
-    }
-
+  try {
+    const [results] = await db.query(checkIDQuery, [internIds]);
     if (results.length > 0) {
       const existingIds = results.map(row => row.tr_id);
       return res.status(400).json({ 
@@ -450,25 +616,23 @@ app.post('/upload', (req, res) => {
       
     ]);
 
-    db.query(addnewQuery, [addnewValues], (err) => {
-      if (err) {
-        console.error('Database insertion error:', err);
-        return res.status(500).json({ 
-          message: 'Failed to save data to database.',
-          error: err.message 
-        });
-      }
-      res.json({ 
-        message: `Successfully added ${parsedData.length} intern(s)!`,
-        count: parsedData.length
-      });
+    const [result] = await db.query(addnewQuery, [addnewValues]);
+    res.json({ 
+      message: `Successfully added ${parsedData.length} intern(s)!`,
+      count: parsedData.length
     });
-  });
+  } catch (err) {
+    console.error('Database insertion error:', err);
+    return res.status(500).json({ 
+      message: 'Failed to save data to database.',
+      error: err.message 
+    });
+  }
 });
 //--------------------------------------------------------------------------
 //Mounthly Summary
 //--------------------------------------------------------------------------
-app.get('/monthly_attendance/:userId/:month', (req, res) => {
+app.get('/monthly_attendance/:userId/:month', async (req, res) => {
   const { userId, month } = req.params;
   const [year, monthNumber] = month.split('-');
   
@@ -496,11 +660,8 @@ app.get('/monthly_attendance/:userId/:month', (req, res) => {
     WHERE YEAR(date) = ? AND MONTH(date) = ?
   `;
 
-  db.query(query, [userId, year, monthNumber, year, monthNumber], (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
+  try {
+    const [results] = await db.query(query, [userId, year, monthNumber, year, monthNumber]);
               
     const daysInMonth = new Date(year, monthNumber, 0).getDate();
     const attendanceMap = {};
@@ -555,7 +716,10 @@ app.get('/monthly_attendance/:userId/:month', (req, res) => {
       attendance: attendanceArray,
       summary
     });
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ error: "Database error" });
+  }
 });
 
 
@@ -590,12 +754,7 @@ app.post('/store_payment', async (req, res) => {
     const checkConditions = paymentData.map(row => [row.tr_id, row.month]);
     const checkIDQuery = 'SELECT tr_id, month FROM payment WHERE (tr_id, month) IN (?)';
 
-    const existingRecords = await new Promise((resolve, reject) => {
-      db.query(checkIDQuery, [checkConditions], (checkErr, results) => {
-        if (checkErr) reject(checkErr);
-        else resolve(results);
-      });
-    });
+    const [existingRecords] = await db.query(checkIDQuery, [checkConditions]);
 
     // Separate new records and records to update
     const newRecords = paymentData.filter(row => 
@@ -717,12 +876,7 @@ app.post('/monthly_payment', async (req, res) => {
     const monthsToCheck = paymentData.map(row => row.month);
     const checkQuery = 'SELECT month, total_pay FROM monthly_pay WHERE month IN (?)';
     
-    const existingRecords = await new Promise((resolve, reject) => {
-      db.query(checkQuery, [monthsToCheck], (checkErr, results) => {
-        if (checkErr) reject(checkErr);
-        else resolve(results);
-      });
-    });
+    const [existingRecords] = await db.query(checkQuery, [monthsToCheck]);
     
     // Separate new records and records to update
     const newRecords = paymentData.filter(row => 
@@ -797,7 +951,7 @@ app.post('/monthly_payment', async (req, res) => {
 //--------------------------------------------------------------------------
 //Manage Payment Details  
 //--------------------------------------------------------------------------
-app.get('/monthly_attendance/:month', (req, res) => {
+app.get('/monthly_attendance/:month', async (req, res) => {
   const { month } = req.params;
   const [year, monthNumber] = month.split('-');
   
@@ -828,11 +982,8 @@ app.get('/monthly_attendance/:month', (req, res) => {
     SELECT TR_ID as id, Short_name as name FROM intern_data
   `;
 
-  db.query(query, [ year, monthNumber, year, monthNumber], (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
+  try {
+    const [results] = await db.query(query, [ year, monthNumber, year, monthNumber]);
               
     const daysInMonth = new Date(year, monthNumber, 0).getDate();
     const attendanceMap = {};
@@ -882,26 +1033,29 @@ app.get('/monthly_attendance/:month', (req, res) => {
       attendance: attendanceArray,
       summary
     });
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ error: "Database error" });
+  }
 });
 
 //--------------------------------------------------------------------------
 //Manage Intern Details
 //--------------------------------------------------------------------------
-app.get('/interns_details', (req, res) => {
+app.get('/interns_details', async (req, res) => {
   const query = 'SELECT * FROM intern_data'; 
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
+  try {
+    const [results] = await db.query(query);
     res.json(results);
     //console.log('All Interns details', results);
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ success: false, message: "Database error" });
+  }
 })
 
 // Edit an intern
-app.put('/interns_details/:id', (req, res) => {
+app.put('/interns_details/:id', async (req, res) => {
   const internId = req.params.id;
   const updatedData = req.body;
 
@@ -912,67 +1066,58 @@ app.put('/interns_details/:id', (req, res) => {
 
   const query = 'UPDATE intern_data SET ? WHERE TR_ID = ?';
   
-  db.query(query, [updatedData, internId], (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
+  try {
+    const [results] = await db.query(query, [updatedData, internId]);
     if (results.affectedRows === 0) {
       return res.status(404).json({ success: false, message: "Intern not found" });
     }
 
-    // Now update the request table inside this callback
+    // Now update the request table, but don't return 404 if not found
     const certiquery = 'UPDATE request SET alert = ? WHERE TR_ID = ?';
+    await db.query(certiquery, [updatedData.Certificate, internId]);
     
-    db.query(certiquery, [updatedData.Certificate, internId], (err, certiResults) => {
-      if (err) {
-        console.error("Database error:", err);
-        return res.status(500).json({ success: false, message: "Database error" });
-      }
-      if (certiResults.affectedRows === 0) {
-        return res.status(404).json({ success: false, message: "Intern not found in request table" });
-      }
-      
-      return res.json({ success: true, message: "Intern updated successfully in both tables" });
-    });
-  });
+    return res.json({ success: true, message: "Intern updated successfully" });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ success: false, message: "Database error" });
+  }
 });
 
 
 // Delete an intern
-app.delete('/interns_details/:id', (req, res) => {
+app.delete('/interns_details/:id', async (req, res) => {
   const internId = req.params.id;
   console.log("Deleting intern with ID:", internId);
   
   const query = 'DELETE FROM intern_data WHERE TR_ID = ?';
-  db.query(query, [internId], (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
+  try {
+    const [results] = await db.query(query, [internId]);
     if (results.affectedRows === 0) {
       return res.status(404).json({ success: false, message: "Intern not found" });
     }
     res.json({ success: true, message: "Intern deleted successfully" });
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ success: false, message: "Database error" });
+  }
 });
 //--------------------------------------------------------------------------
 //Calendar
 //--------------------------------------------------------------------------
 // Get all holidays
-app.get('/holidays', (req, res) => {
+app.get('/holidays', async (req, res) => {
   const query = 'SELECT id, date, holiday_name as name FROM holidays ORDER BY date ASC';
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
+  try {
+    const [results] = await db.query(query);
     res.json(Array.isArray(results) ? results : []);
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ success: false, message: "Database error" });
+  }
 });
 
 // Add new holiday
-app.post('/ins_holidays', (req, res) => {
+app.post('/ins_holidays', async (req, res) => {
   const { date, name } = req.body;
 
   if (!date || !name) { 
@@ -985,29 +1130,24 @@ app.post('/ins_holidays', (req, res) => {
   }
 
   const query = 'INSERT INTO holidays (date, holiday_name) VALUES (?, ?)';
-  db.query(query, [date, name], (err, result) => {
-    if (err) {
-      if (err.code === 'ER_DUP_ENTRY') {
-        return res.status(400).json({ error: 'Holiday already exists for this date' });
-      }
-      console.error("Database error:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
+  try {
+    const [result] = await db.query(query, [date, name]);
     
     // Return the newly created holiday
     const getQuery = 'SELECT id, date, holiday_name as name FROM holidays WHERE id = ?';
-    db.query(getQuery, [result.insertId], (err, newHoliday) => {
-      if (err) {
-        console.error("Database error:", err);
-        return res.status(500).json({ error: "Database error" });
-      }
-      res.status(201).json(newHoliday[0]);
-    });
-  });
+    const [newHoliday] = await db.query(getQuery, [result.insertId]);
+    res.status(201).json(newHoliday[0]);
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({ error: 'Holiday already exists for this date' });
+    }
+    console.error("Database error:", err);
+    return res.status(500).json({ error: "Database error" });
+  }
 });
 
 // Update holiday
-app.put('/holidays/:id', (req, res) => {
+app.put('/holidays/:id', async (req, res) => {
   const { id } = req.params;
   const { date, name } = req.body;
 
@@ -1017,42 +1157,31 @@ app.put('/holidays/:id', (req, res) => {
 
   // First check if the holiday exists
   const checkQuery = 'SELECT id FROM holidays WHERE id = ?';
-  db.query(checkQuery, [id], (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
-
+  try {
+    const [results] = await db.query(checkQuery, [id]);
     if (results.length === 0) {
       return res.status(404).json({ error: "Holiday not found" });
     }
 
     // Proceed with update
     const updateQuery = 'UPDATE holidays SET date = ?, holiday_name = ? WHERE id = ?';
-    db.query(updateQuery, [date, name, id], (err, result) => {
-      if (err) {
-        if (err.code === 'ER_DUP_ENTRY') {
-          return res.status(400).json({ error: 'Another holiday already exists for this date' });
-        }
-        console.error("Database error:", err);
-        return res.status(500).json({ error: "Database error" });
-      }
+    await db.query(updateQuery, [date, name, id]);
 
-      // Return the updated holiday
-      const getQuery = 'SELECT id, date, holiday_name as name FROM holidays WHERE id = ?';
-      db.query(getQuery, [id], (err, updatedHoliday) => {
-        if (err) {
-          console.error("Database error:", err);
-          return res.status(500).json({ error: "Database error" });
-        }
-        res.json(updatedHoliday[0]);
-      });
-    });
-  });
+    // Return the updated holiday
+    const getQuery = 'SELECT id, date, holiday_name as name FROM holidays WHERE id = ?';
+    const [updatedHoliday] = await db.query(getQuery, [id]);
+    res.json(updatedHoliday[0]);
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({ error: 'Another holiday already exists for this date' });
+    }
+    console.error("Database error:", err);
+    return res.status(500).json({ error: "Database error" });
+  }
 });
 
 // Delete holiday
-app.delete('/holidays/:id', (req, res) => {
+app.delete('/holidays/:id', async (req, res) => {
   const { id } = req.params;
 
   // First check if the holiday exists
@@ -1082,7 +1211,7 @@ app.delete('/holidays/:id', (req, res) => {
 //Upload All Interns Data
 //-------------------------------------------------------------------
 
-app.post('/upload_all', (req, res) => {
+app.post('/upload_all', async (req, res) => {
   const { parsedData } = req.body;
   console.log("Received data from frontend:", parsedData);
 
@@ -1098,12 +1227,8 @@ app.post('/upload_all', (req, res) => {
 
   // Check for existing TR_IDs in database
   const checkTRIDQuery = 'SELECT TR_ID FROM intern_data WHERE TR_ID IN (?)'; 
-  db.query(checkTRIDQuery, [trIds], (checkErr, results) => {
-    if (checkErr) {
-      console.error('Error checking TR_IDs:', checkErr);
-      return res.status(500).json({ message: 'Database error during TR_ID check' });
-    }
-
+  try {
+    const [results] = await db.query(checkTRIDQuery, [trIds]);
     if (results.length > 0) {
       const existingIds = results.map(row => row.tr_id);
       return res.status(400).json({ 
@@ -1157,31 +1282,29 @@ app.post('/upload_all', (req, res) => {
 
     const insertQuery = `INSERT INTO intern_data (
       TR_ID, Mr_Ms, Name, Short_Name, Address, Mobile_No, Id_No,
-      Institute, Program, Start_Date, End_Date, Actual_End_Date,
+      Institute, Programme, Start_Date, End_Date, Actual_End_Date,
       Extended_Period, Category, Bank, Branch, Account_No,
       Memo_Number, Status, CV, NDA, Appointment_Letter,
       Certificate, Reference_By, Name_2
     ) VALUES ?`;
 
-    db.query(insertQuery, [insertData], (insertErr, result) => {
-      if (insertErr) {
-        console.error('Error inserting data:', insertErr);
-        return res.status(500).json({ 
-          message: 'Error inserting data', 
-          error: insertErr.sqlMessage || insertErr.message 
-        });
-      }
-      
-      res.json({ 
-        message: 'Data uploaded successfully', 
-        count: result.affectedRows,
-        insertedIds: result.insertId ? 
-          Array.from({length: result.affectedRows}, (_, i) => result.insertId + i) : 
-          []
-      });
+    const [result] = await db.query(insertQuery, [insertData]);
+    res.json({ 
+      message: 'Data uploaded successfully', 
+      count: result.affectedRows,
+      insertedIds: result.insertId ? 
+        Array.from({length: result.affectedRows}, (_, i) => result.insertId + i) : 
+        []
     });
-  });
+  } catch (err) {
+    console.error('Error inserting data:', err);
+    return res.status(500).json({ 
+      message: 'Error inserting data', 
+      error: err.sqlMessage || err.message 
+    });
+  }
 });
+
 
 // Start the server
 app.listen(PORT, () => {

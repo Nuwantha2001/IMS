@@ -20,6 +20,7 @@ const WrappedApp = () => {
     '/calendar',
     '/uploadexcel',
     '/payment',
+    '/payment_m',
     
   ];
 

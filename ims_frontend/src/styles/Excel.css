@@ -1,6 +1,6 @@
 .ex_container {
     padding: 20px;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 30px auto;
     font-family: Arial, sans-serif;
     background-color: #f9f9f9e4;
@@ -103,4 +103,27 @@
   
   .ex_table-content tr:nth-child(even) {
     background-color: #f9f9f9;
+  }
+
+   h3,p {
+    color: #333;
+    margin-bottom: 10px;
+  }
+  .dump_table {
+    width: 80%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    border-radius: 10%;
+
+  }
+  .dump_table th, .dump_table td {
+    border: 1px solid #ddd;
+    padding: 5px;
+    text-align: left;
+    font-size: 0.85rem;
+    color: black;
+    
+  }
+  .dump_table th {
+    font-weight: bold;
   }
